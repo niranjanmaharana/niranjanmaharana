@@ -14,16 +14,13 @@ public class ResourceNotFoundException extends RuntimeException{
 	 * 
 	 */
 	public ResourceNotFoundException() {
-		super("User not found exception !");
+		super("Resource not found exception !");
 	}
 	
 	public ResourceNotFoundException(String message) {
 		super(message);
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.lang.Throwable#getMessage()
-	 */
 	@Override
 	public String getMessage() {
 		return super.getMessage();

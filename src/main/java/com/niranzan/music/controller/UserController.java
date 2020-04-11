@@ -46,7 +46,7 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
-	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
 	@ApiOperation(value = "Get all users in this application")
 	@GetMapping
@@ -61,11 +61,11 @@ public class UserController {
 	@PostMapping
 	public ResponseEntity<SimpleResponseEntity> registerUser(@Valid @RequestBody UserRequestView request) {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		logger.info(username + " trying to register user.");
+		LOGGER.info(username + " trying to register user.");
 		try {
 			UserProfile user = userService.save(request);
 			request.setId(user.getId());
-			logger.info(username + " registered user successfully.");
+			LOGGER.info(username + " registered user successfully.");
 			return ResponseEntity.ok()
 					.body(new SimpleResponseEntity(HttpStatus.OK.value(), "User registered successfully!", request));
 		} catch (DuplicateFieldException exception) {
@@ -83,7 +83,7 @@ public class UserController {
 	@ApiOperation(value = "Update an existing user")
 	@PutMapping
 	public ResponseEntity<SimpleResponseEntity> updateUser(@Valid @RequestBody UserRequestView request) {
-		logger.info("User trying to update " + request.getUsername());
+		LOGGER.info("User trying to update " + request.getUsername());
 		try {
 			userService.update(request);
 		} catch (ResourceNotFoundException exception) {
@@ -93,7 +93,7 @@ public class UserController {
 			return ResponseEntity.ok()
 					.body(new SimpleResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getMessage(), ""));
 		}
-		logger.info("User updated successfully...");
+		LOGGER.info("User updated successfully...");
 		return ResponseEntity.ok()
 				.body(new SimpleResponseEntity(HttpStatus.OK.value(), "User updated successfully!", ""));
 	}

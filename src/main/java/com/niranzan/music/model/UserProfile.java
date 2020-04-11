@@ -3,8 +3,8 @@
  */
 package com.niranzan.music.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -56,7 +56,7 @@ public class UserProfile extends BaseEntity {
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "USER_AUTHORITY", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
-	private Set<Authority> authorities = new HashSet<>();
+	private List<Authority> authorities = new ArrayList<>();
 
 	/**
 	 * @param firstNm
@@ -188,7 +188,7 @@ public class UserProfile extends BaseEntity {
 	/**
 	 * @return the authorities
 	 */
-	public Set<Authority> getAuthorities() {
+	public List<Authority> getAuthorities() {
 		return authorities;
 	}
 
@@ -196,7 +196,7 @@ public class UserProfile extends BaseEntity {
 	 * @param authorities
 	 *            the authorities to set
 	 */
-	public void setAuthorities(Set<Authority> authorities) {
+	public void setAuthorities(List<Authority> authorities) {
 		this.authorities = authorities;
 	}
 }

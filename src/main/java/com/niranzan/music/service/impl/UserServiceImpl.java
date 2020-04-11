@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService{
 	@Value("${password.invalid.message}")
 	private String invalidPasswordMessage;
 
-	private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	@Override
 	@Transactional
@@ -62,21 +62,21 @@ public class UserServiceImpl implements UserService{
 	@Transactional
 	public UserProfile save(UserRequestView request) {
 		if (userRepository.existsByUsername(request.getUsername())) {
-			logger.error("Duplicate username found !");
+			LOGGER.error("Duplicate username found !");
 			throw new DuplicateFieldException("Username already exists !");
 		}
 		if (userRepository.existsByEmail(request.getEmail())) {
-			logger.error("Duplicate email found !");
+			LOGGER.error("Duplicate email found !");
 			throw new DuplicateFieldException("Email already exists !");
 		}
 		
 		if (userRepository.existsByMobile(request.getMobile())) {
-			logger.error("Duplicate mobile number found !");
+			LOGGER.error("Duplicate mobile number found !");
 			throw new DuplicateFieldException("Mobile number already registered !");
 		}
 		
 		if (!passwordValidator.isValid(request.getPassword())) {
-			logger.error("Invalid password format !");
+			LOGGER.error("Invalid password format !");
 			throw new InvalidFormatException(invalidPasswordMessage);
 		}
 
@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService{
 		Set<String> strRoles = new HashSet<>();
 		if(request.getRole() == null) strRoles.add(UserRoleEnum.ROLE_USER.getName());
 		else strRoles = request.getRole();
-		Set<Authority> roles = new HashSet<>();
+		List<Authority> roles = new ArrayList<>();
 
 		strRoles.forEach(role -> {
 			Authority adminRole = roleRepository.findByName(UserRoleEnum.getById(Integer.parseInt(role) - 1))
@@ -106,12 +106,12 @@ public class UserServiceImpl implements UserService{
 		if (user == null) throw new ResourceNotFoundException("User not found with id : " + request.getId());
 		
 		if (userRepository.existsByEmailExceptUser(request.getId(), request.getEmail())) {
-			logger.error("Duplicate email found !");
+			LOGGER.error("Duplicate email found !");
 			throw new DuplicateFieldException("Email already registered !");
 		}
 		
 		if (userRepository.existsByMobileExceptUser(request.getId(), request.getMobile())) {
-			logger.error("Duplicate mobile number found !");
+			LOGGER.error("Duplicate mobile number found !");
 			throw new DuplicateFieldException("Mobile number already registered !");
 		}
 		user.setFirstNm(request.getFirstNm());
@@ -119,7 +119,7 @@ public class UserServiceImpl implements UserService{
 		user.setEmail(request.getEmail());
 		user.setMobile(request.getMobile());
 		Set<String> strRoles = request.getRole();
-		Set<Authority> roles = new HashSet<>();
+		List<Authority> roles = new ArrayList<>();
 		
 		strRoles.forEach(role -> {
 			Authority adminRole = roleRepository.findByName(UserRoleEnum.getById(Integer.parseInt(role) - 1))

@@ -1,17 +1,19 @@
 package com.niranzan.music.view.response;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+
+import com.niranzan.music.constant.AppConstants;
 
 public class SimpleResponseEntity {
-	private Date date;
+	private LocalDateTime time;
 	private int statusCode;
 	private String statusMessage;
 	private Object data;
 
 	public SimpleResponseEntity() {
-		this.date = new Date();
+		this.time = LocalDateTime.now();
 		this.statusCode = 200;
-		this.statusMessage = "Success";
+		this.statusMessage = AppConstants.SUCCESS_RESPONSE_MSG;
 	}
 
 	public SimpleResponseEntity(int statusCode, String statusMessage, Object data) {
@@ -22,18 +24,17 @@ public class SimpleResponseEntity {
 	}
 
 	/**
-	 * @return the date
+	 * @return the time
 	 */
-	public Date getDate() {
-		return date;
+	public LocalDateTime getTime() {
+		return time;
 	}
 
 	/**
-	 * @param date
-	 *            the date to set
+	 * @param time the time to set
 	 */
-	public void setDate(Date date) {
-		this.date = date;
+	public void setTime(LocalDateTime time) {
+		this.time = time;
 	}
 
 	/**
@@ -44,8 +45,7 @@ public class SimpleResponseEntity {
 	}
 
 	/**
-	 * @param statusCode
-	 *            the statusCode to set
+	 * @param statusCode the statusCode to set
 	 */
 	public void setStatusCode(int statusCode) {
 		this.statusCode = statusCode;
@@ -59,8 +59,7 @@ public class SimpleResponseEntity {
 	}
 
 	/**
-	 * @param statusMessage
-	 *            the statusMessage to set
+	 * @param statusMessage the statusMessage to set
 	 */
 	public void setStatusMessage(String statusMessage) {
 		this.statusMessage = statusMessage;
@@ -74,8 +73,7 @@ public class SimpleResponseEntity {
 	}
 
 	/**
-	 * @param data
-	 *            the data to set
+	 * @param data the data to set
 	 */
 	public void setData(Object data) {
 		this.data = data;
