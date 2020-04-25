@@ -4,6 +4,8 @@
 package com.niranzan.music.service.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,11 +22,15 @@ import com.niranzan.music.exceptions.DuplicateFieldException;
 import com.niranzan.music.exceptions.InvalidFormatException;
 import com.niranzan.music.exceptions.ResourceNotFoundException;
 import com.niranzan.music.model.Authority;
+import com.niranzan.music.model.ResetLink;
 import com.niranzan.music.model.UserProfile;
+import com.niranzan.music.repository.ResetLinkRepository;
 import com.niranzan.music.repository.RoleRepository;
 import com.niranzan.music.repository.UserRepository;
 import com.niranzan.music.service.PasswordValidator;
 import com.niranzan.music.service.UserService;
+import com.niranzan.music.util.CommonUtil;
+import com.niranzan.music.view.request.ResetPasswordRequestView;
 import com.niranzan.music.view.request.UserRequestView;
 import com.niranzan.music.view.response.UserResponseView;
 
@@ -37,13 +43,12 @@ import com.niranzan.music.view.response.UserResponseView;
 public class UserServiceImpl implements UserService{
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private RoleRepository roleRepository;
-	
 	@Autowired
 	private PasswordValidator passwordValidator;
-	
+	@Autowired
+	private ResetLinkRepository resetLinkRepository;
 	@Value("${password.invalid.message}")
 	private String invalidPasswordMessage;
 
@@ -145,5 +150,60 @@ public class UserServiceImpl implements UserService{
 		userResponse.setActive(user.isActive());
 		userResponse.setProfilePic(user.getPrflPic());
 		return userResponse;
+	}
+	
+	@Override
+	public ResetLink generateResetLink(String email) {
+		UserProfile profile = userRepository.findByEmail(email).orElse(null);
+		if(profile == null) return null;
+		
+		ResetLink resetLink = this.resetLinkRepository.findByUserId(profile.getId()).orElse(new ResetLink());
+		resetLink.setActive(true);
+		resetLink.setUserId(profile.getId());
+		resetLink.setValidFrom(new Date());
+		/*
+		 * Set token validity 3 hours from now
+		 * */
+		Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(new Date());
+	    calendar.add(Calendar.HOUR_OF_DAY, 3);
+		resetLink.setValidTo(calendar.getTime());
+		resetLink.setLink(CommonUtil.generateRandomToken());
+		resetLink = this.resetLinkRepository.save(resetLink);
+		return resetLink;
+	}
+	
+	@Override
+	public boolean validateResetLink(String token) {
+		ResetLink resetLink = this.resetLinkRepository.findByLink(token).orElse(null);
+		if(resetLink != null) {
+			return resetLink.getValidTo().compareTo(new Date()) > 0 && resetLink.isActive();
+		}return false;
+	}
+	
+	@Override
+	public boolean resetPassword(ResetPasswordRequestView request) {
+		ResetLink resetLink = this.resetLinkRepository.findByLink(request.getToken()).orElse(null);
+		boolean isValid = false;
+		if(resetLink != null) {
+			isValid = resetLink.getValidTo().compareTo(new Date()) > 0 && resetLink.isActive();
+		} if(isValid) {
+			UserProfile profile = this.userRepository.getOne(resetLink.getId());
+			if(profile == null) {
+				LOGGER.error("User not found with token!");
+				throw new ResourceNotFoundException("Link is not valid!");
+			}
+			if (!passwordValidator.isValid(request.getPassword())) {
+				LOGGER.error("Invalid password format !");
+				throw new InvalidFormatException(invalidPasswordMessage);
+			}
+			profile.setPassword(request.getPassword());
+			this.userRepository.save(profile);
+			resetLink.setActive(false);
+			return true;
+		} else {
+			LOGGER.error("User not found with token!");
+			throw new ResourceNotFoundException("Link is not valid!");
+		}
 	}
 }

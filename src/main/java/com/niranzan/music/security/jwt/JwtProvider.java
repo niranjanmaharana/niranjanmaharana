@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.niranzan.music.service.impl.UserPrinciple;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -24,15 +25,21 @@ import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
 public class JwtProvider {
-	private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JwtProvider.class);
 	@Value("${app.jwt.secret}")
 	private String jwtSecret;
 	@Value("${app.jwt.expiration}")
 	private int jwtExpiration;
 
 	public String generateJwtToken(Authentication authentication) {
-		UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
-		return Jwts.builder().setSubject((userPrincipal.getUsername())).setIssuedAt(new Date())
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Claims claims = Jwts.claims().setSubject(userPrinciple.getUsername());
+		claims.put("id", userPrinciple.getId());
+		claims.put("username", userPrinciple.getUsername());
+		claims.put("email", userPrinciple.getEmail());
+		claims.put("firstNm", userPrinciple.getFirstNm());
+		claims.put("lastNm", userPrinciple.getLastNm());
+		return Jwts.builder().setClaims(claims).setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtExpiration * 1000))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
 	}
@@ -42,15 +49,15 @@ public class JwtProvider {
 			Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
 			return true;
 		} catch (SignatureException e) {
-			logger.error("Invalid JWT signature -> Message: {} ", e.getMessage());
+			LOGGER.error("Invalid JWT signature -> Message: {} ", e.getMessage());
 		} catch (MalformedJwtException e) {
-			logger.error("Invalid JWT token -> Message: {}", e.getMessage());
+			LOGGER.error("Invalid JWT token -> Message: {}", e.getMessage());
 		} catch (ExpiredJwtException e) {
-			logger.error("Expired JWT token -> Message: {}", e.getMessage());
+			LOGGER.error("Expired JWT token -> Message: {}", e.getMessage());
 		} catch (UnsupportedJwtException e) {
-			logger.error("Unsupported JWT token -> Message: {}", e.getMessage());
+			LOGGER.error("Unsupported JWT token -> Message: {}", e.getMessage());
 		} catch (IllegalArgumentException e) {
-			logger.error("JWT claims string is empty -> Message: {}", e.getMessage());
+			LOGGER.error("JWT claims string is empty -> Message: {}", e.getMessage());
 		}
 		return false;
 	}

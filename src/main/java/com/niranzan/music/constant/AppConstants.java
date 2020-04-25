@@ -17,4 +17,6 @@ public interface AppConstants {
 	public static final HttpStatus FAILURE_RSPNS_STTS = HttpStatus.INTERNAL_SERVER_ERROR;
 	
 	public static final String FAILURE_RESPONSE_DATA = HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase();
+	
+	public static final String TOKEN_TYPE = "Bearer";
 }

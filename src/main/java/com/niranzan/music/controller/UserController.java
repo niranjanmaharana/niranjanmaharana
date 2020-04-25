@@ -5,6 +5,7 @@ package com.niranzan.music.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,12 +23,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.niranzan.music.constant.AppConstants;
 import com.niranzan.music.exceptions.DuplicateFieldException;
 import com.niranzan.music.exceptions.InvalidFormatException;
 import com.niranzan.music.exceptions.ResourceNotFoundException;
 import com.niranzan.music.model.UserProfile;
+import com.niranzan.music.security.jwt.JwtProvider;
 import com.niranzan.music.service.UserService;
 import com.niranzan.music.view.request.UserRequestView;
+import com.niranzan.music.view.response.JwtResponse;
 import com.niranzan.music.view.response.SimpleResponseEntity;
 import com.niranzan.music.view.response.UserResponseView;
 
@@ -46,6 +51,8 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private JwtProvider jwtProvider;
 	private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
 	@ApiOperation(value = "Get all users in this application")
@@ -96,5 +103,23 @@ public class UserController {
 		LOGGER.info("User updated successfully...");
 		return ResponseEntity.ok()
 				.body(new SimpleResponseEntity(HttpStatus.OK.value(), "User updated successfully!", ""));
+	}
+	
+	@ApiOperation(value = "Update token")
+	@PostMapping("/token")
+	public ResponseEntity<?> updateToken(HttpServletRequest request) {
+		try {
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			if(authentication != null) {
+				return ResponseEntity.ok()
+						.body(new JwtResponse(jwtProvider.generateJwtToken(authentication), AppConstants.TOKEN_TYPE));
+			} else {
+				return ResponseEntity.ok()
+						.body(new SimpleResponseEntity(HttpStatus.NOT_FOUND.value(), AppConstants.FAILURE_RESPONSE_MSG, HttpStatus.NOT_FOUND.getReasonPhrase()));
+			}
+		} catch (Exception exception) {
+			return ResponseEntity.ok()
+					.body(new SimpleResponseEntity(HttpStatus.NOT_FOUND.value(), exception.getMessage(), ""));
+		}
 	}
 }

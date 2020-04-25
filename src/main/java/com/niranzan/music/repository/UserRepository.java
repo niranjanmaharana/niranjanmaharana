@@ -12,6 +12,7 @@ import com.niranzan.music.model.UserProfile;
 @Repository
 public interface UserRepository extends JpaRepository<UserProfile, Long> {
     Optional<UserProfile> findByUsername(String username);
+    Optional<UserProfile> findByEmail(String email);
     Boolean existsByUsername(String username);
     Boolean existsByEmail(String email);
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN 'true' ELSE 'false' END FROM UserProfile u WHERE u.email = :email and u.id != :id")

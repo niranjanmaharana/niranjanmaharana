@@ -1,6 +1,5 @@
 package com.niranzan.music.config.security;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +37,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private List<String> allowedOrigins;
 	@Value("#{'${allowed.headers}'.split(',')}")
 	private List<String> allowedHeaders;
+	@Value("#{'${allowed.methods}'.split(',')}")
+	private List<String> allowedMethods;
 	@Value("#{'${whitelist}'.split(',')}")
 	private List<String> whiteListUrls;
 	
@@ -77,9 +78,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public CorsConfigurationSource corsConfigurationSource() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.addAllowedOrigin("*");
-		configuration.addAllowedHeader("*");
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
+		configuration.setAllowedOrigins(allowedOrigins);
+		configuration.setAllowedHeaders(allowedHeaders);
+		configuration.setAllowedMethods(allowedMethods);
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
