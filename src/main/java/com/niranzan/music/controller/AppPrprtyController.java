@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(value = "Application Property", consumes = "application/json", produces = "application/json")
 @PreAuthorize("hasRole('SUPERADMIN')")
 @RestController
-@RequestMapping("/prprty")
+@RequestMapping("/property")
 public class AppPrprtyController {
 	@Autowired
 	private AppPrprtyService appPrprtyService;

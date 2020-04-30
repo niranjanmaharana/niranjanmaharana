@@ -74,8 +74,9 @@ public class BaseEntity {
 			validTo = calendar.getTime();
 		}
 		if (createdBy == null || createdBy.isEmpty()) {
-			String username = SecurityContextHolder.getContext().getAuthentication().getName();
-			createdBy = username;
+			if(SecurityContextHolder.getContext().getAuthentication() != null) {
+				createdBy = SecurityContextHolder.getContext().getAuthentication().getName();
+			}
 		}
 	}
 

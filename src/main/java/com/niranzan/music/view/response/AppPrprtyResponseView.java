@@ -3,6 +3,12 @@
  */
 package com.niranzan.music.view.response;
 
+import java.util.Date;
+
+import javax.persistence.Column;
+
+import org.hibernate.annotations.UpdateTimestamp;
+
 /**
  * @author Niranjan
  *
@@ -12,6 +18,10 @@ public class AppPrprtyResponseView {
 	private String prprtyKey;
 	private String prprtyValue;
 	private String prprtyDesc;
+	private Date createdDtm;
+	private String createdBy;
+	private Date updatedDtm;
+	private String updatedBy;
 	private boolean active;
 	
 	public AppPrprtyResponseView() {
@@ -86,5 +96,61 @@ public class AppPrprtyResponseView {
 	 */
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	/**
+	 * @return the createdDtm
+	 */
+	public Date getCreatedDtm() {
+		return createdDtm;
+	}
+
+	/**
+	 * @param createdDtm the createdDtm to set
+	 */
+	public void setCreatedDtm(Date createdDtm) {
+		this.createdDtm = createdDtm;
+	}
+
+	/**
+	 * @return the createdBy
+	 */
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	/**
+	 * @param createdBy the createdBy to set
+	 */
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	/**
+	 * @return the updatedDtm
+	 */
+	public Date getUpdatedDtm() {
+		return updatedDtm;
+	}
+
+	/**
+	 * @param updatedDtm the updatedDtm to set
+	 */
+	public void setUpdatedDtm(Date updatedDtm) {
+		this.updatedDtm = updatedDtm;
+	}
+
+	/**
+	 * @return the updatedBy
+	 */
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	/**
+	 * @param updatedBy the updatedBy to set
+	 */
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
 	}
 }

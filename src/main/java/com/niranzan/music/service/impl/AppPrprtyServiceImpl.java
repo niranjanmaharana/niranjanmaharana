@@ -32,14 +32,13 @@ public class AppPrprtyServiceImpl implements AppPrprtyService {
 	
 	@Override
 	public List<AppPrprty> getAppProperties() {
-		return prprtyRepository.findAll();
+		return this.prprtyRepository.findAll();
 	}
 	
 	@Override
 	public List<AppPrprtyResponseView> findAll() {
-		List<AppPrprty> properties = prprtyRepository.findAll();
 		List<AppPrprtyResponseView> views = new ArrayList<>();
-		properties.forEach(property -> views.add(getResponseView(property)));
+		this.prprtyRepository.findAll().forEach(property -> views.add(this.getResponseView(property)));
 		return views;
 	}
 	
@@ -91,6 +90,10 @@ public class AppPrprtyServiceImpl implements AppPrprtyService {
 		response.setPrprtyKey(property.getPrprtyKey());
 		response.setPrprtyValue(property.getPrprtyValue());
 		response.setPrprtyDesc(property.getPrprtyDesc());
+		response.setCreatedBy(property.getCreatedBy());
+		response.setCreatedDtm(property.getCreatedDtm());
+		response.setUpdatedBy(property.getUpdatedBy());
+		response.setUpdatedDtm(property.getUpdatedDtm());
 		return response;
 	}
 }

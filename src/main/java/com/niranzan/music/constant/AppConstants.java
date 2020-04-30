@@ -19,4 +19,7 @@ public interface AppConstants {
 	public static final String FAILURE_RESPONSE_DATA = HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase();
 	
 	public static final String TOKEN_TYPE = "Bearer";
+	
+	public static final String UNKNOWN_VAL = "UNK";
+	public static final String NA_VAL = "NA";
 }

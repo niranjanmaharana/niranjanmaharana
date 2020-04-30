@@ -1,9 +1,13 @@
 package com.niranzan.music.controller;
 
+import java.util.Locale;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.niranzan.music.constant.AppConstants;
 import com.niranzan.music.exceptions.DuplicateFieldException;
 import com.niranzan.music.exceptions.InvalidFormatException;
+import com.niranzan.music.exceptions.ResourceNotFoundException;
 import com.niranzan.music.model.UserProfile;
+import com.niranzan.music.model.UserSession;
 import com.niranzan.music.security.jwt.JwtProvider;
 import com.niranzan.music.service.UserService;
+import com.niranzan.music.service.UserSessionService;
 import com.niranzan.music.view.request.AuthRequest;
 import com.niranzan.music.view.request.ResetPasswordRequestView;
 import com.niranzan.music.view.request.UserRequestView;
@@ -43,37 +51,58 @@ public class AuthController {
 	private UserService userService;
 	@Autowired
 	private JwtProvider jwtProvider;
-	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+	@Autowired
+	private UserSessionService userSessionService;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
 	@PostMapping("/signin")
-	public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
+	public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest loginRequest, @RequestHeader Map<String, String> headers, HttpServletRequest request) {
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtProvider.generateJwtToken(authentication);
-		logger.info("Token generated : " + jwt);
+		LOGGER.info("{} logged in.", authentication.getName());
+		
+		/*
+		 * add an entry to the session table to keep track of user logins
+		 * */
+		Locale requestLocale = request.getLocale();		
+		UserSession session = new UserSession();
+		session.setUsername(authentication.getName());
+		String country = requestLocale.getDisplayCountry();
+		session.setCountry(StringUtils.isNotBlank(country) ? country : AppConstants.UNKNOWN_VAL);
+		session.setUserAgent(headers.get("user-agent"));
+		session.setOrigin(headers.get("origin"));
+		session.setSuccess(true);
+		userSessionService.saveSession(session);
 		return ResponseEntity.ok(new JwtResponse(jwt));
 	}
 	
 	@PostMapping("/signup")
 	public ResponseEntity<SimpleResponseEntity> registerUser(@Valid @RequestBody UserRequestView request) {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		logger.info(username + " trying to register user.");
 		try {
 			UserProfile user = userService.save(request);
 			request.setId(user.getId());
-			logger.info(username + " registered user successfully.");
+			LOGGER.info(username + " registered user successfully.");
 			return ResponseEntity.ok()
 					.body(new SimpleResponseEntity(HttpStatus.OK.value(), AppConstants.SUCCESS_RESPONSE_MSG, request));
 		} catch (DuplicateFieldException exception) {
+			LOGGER.info("Exception occured while registering user: {}", exception.getMessage());
 			return ResponseEntity.ok()
-					.body(new SimpleResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getMessage(), ""));
+					.body(new SimpleResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getMessage(), null));
 		} catch (InvalidFormatException exception) {
+			LOGGER.info("Exception occured while registering user: {}", exception.getMessage());
 			return ResponseEntity.ok()
-					.body(new SimpleResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getMessage(), ""));
+					.body(new SimpleResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getMessage(), null));
+		} catch(ResourceNotFoundException exception) {
+			LOGGER.info("Exception occured while registering user: {}", exception.getMessage());
+			return ResponseEntity.ok()
+					.body(new SimpleResponseEntity(HttpStatus.BAD_REQUEST.value(), exception.getMessage(), null));
 		} catch (Exception exception) {
+			LOGGER.info("Exception occured while registering user: {}", exception.getMessage());
 			return ResponseEntity.ok().body(
-					new SimpleResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error !", ""));
+					new SimpleResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error !", null));
 		}
 	}
 	

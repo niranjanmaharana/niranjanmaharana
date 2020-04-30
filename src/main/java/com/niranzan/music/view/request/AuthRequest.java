@@ -15,7 +15,7 @@ public class AuthRequest {
     @Size(max = 16)
     @ApiModelProperty(notes = "Password for login.", required = true, position = 1)
     private String password;
-
+    
     public String getUsername() {
         return username;
     }
