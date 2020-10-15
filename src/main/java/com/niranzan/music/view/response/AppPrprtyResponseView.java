@@ -5,10 +5,6 @@ package com.niranzan.music.view.response;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-
-import org.hibernate.annotations.UpdateTimestamp;
-
 /**
  * @author Niranjan
  *
